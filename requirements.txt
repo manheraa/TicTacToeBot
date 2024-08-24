@@ -1,4 +1,7 @@
-Flask==2.1.2
-torch==2.0.0
-torch-geometric==2.1.0
+Gunicorn
+Flask
+torch
+torch-geometric
+pandas
+numpy
 
