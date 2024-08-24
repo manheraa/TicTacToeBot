@@ -158,5 +158,4 @@ def play():
     
     return jsonify({'status': 'continue', 'board': board})
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
