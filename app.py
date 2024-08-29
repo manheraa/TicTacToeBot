@@ -48,10 +48,8 @@ def prepare_board_state(moves):
             board[move] = 1 if i % 2 == 0 else -1  # Player 1's move is 1, Player 2's move is -1
     features = torch.tensor(board, dtype=torch.float).view(-1, 1)
     return features
-
-def predict_next_moves(moves):
-    """Predict the next moves for the AI based on current board state."""
-    board = prepare_board_state(moves).squeeze().tolist()  # Convert features to list
+def predict_next_moves(board):
+    """Predict the next moves for the AI based on the current board state."""
     possible_moves = [i for i, v in enumerate(board) if v == 0]  # Find empty spaces
     predictions = []
 
@@ -85,7 +83,6 @@ def predict_next_moves(moves):
     predictions.sort(key=lambda x: x[1][1], reverse=True)
     
     return predictions
-
 def check_win(board):
     """Check if there is a win condition on the board."""
     win_conditions = [
@@ -112,29 +109,31 @@ def find_blocking_move(board):
 def index():
     return render_template('index.html')
 
+
 @app.route('/play', methods=['POST'])
 def play():
     data = request.json
     board = data['board']
     user_move = data['user_move']
     
+    # Update the board with the user's move
     board[user_move] = -1  # User is Player 2
     
-    # Check for win or draw
+    # Check if the user won
     if check_win(board) is not None:
         return jsonify({'status': 'win', 'board': board})
+    
+    # Check for a draw
     if all(cell != 0 for cell in board):
         return jsonify({'status': 'draw', 'board': board})
     
-    # AI's turn (predict next move)
-    moves = [str(cell) if cell != 0 else '?' for cell in board]
-    
-    # Check for blocking move
+    # AI's turn (predict the next move)
+    # No need to convert the board to 'moves' format, directly pass the board
     block_move = find_blocking_move(board)
     if block_move is not None:
         best_move = block_move
     else:
-        next_moves_predictions = predict_next_moves(moves)
+        next_moves_predictions = predict_next_moves(board)
         
         # Choose the best move with the highest probability
         best_move = None
@@ -150,12 +149,14 @@ def play():
     if best_move is not None:
         board[best_move] = 1  # AI is Player 1
     
-    # Check for win or draw
+    # Check if the AI won
     if check_win(board) is not None:
         return jsonify({'status': 'ai_win', 'board': board})
+    
+    # Check for a draw after AI's move
     if all(cell != 0 for cell in board):
         return jsonify({'status': 'draw', 'board': board})
     
+    # Continue the game
     return jsonify({'status': 'continue', 'board': board})
-
 
