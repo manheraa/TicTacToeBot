@@ -1,7 +1,8 @@
 Gunicorn
-Flask
+Flask==2.2.2
 torch
 torch-geometric
 pandas
 numpy
+Werkzeug==2.2.2
 
